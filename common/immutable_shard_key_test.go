@@ -63,6 +63,33 @@ func TestIsImmutableShardKeyError(t *testing.T) {
 			want: true,
 		},
 		{
+			name: "write exception code 66 (single UpdateOne path)",
+			err: mongo.WriteException{
+				WriteErrors: mongo.WriteErrors{
+					{Index: 0, Code: 66, Message: "After applying the update, the immutable field 'payCompanyInfo.companyId' was found to have been altered"},
+				},
+			},
+			want: true,
+		},
+		{
+			name: "write exception code 31025 (single UpdateOne path)",
+			err: mongo.WriteException{
+				WriteErrors: mongo.WriteErrors{
+					{Index: 0, Code: 31025, Message: "Shard key update is not allowed without specifying the full shard key in the query"},
+				},
+			},
+			want: true,
+		},
+		{
+			name: "write exception code 11000 (single write, not immutable)",
+			err: mongo.WriteException{
+				WriteErrors: mongo.WriteErrors{
+					{Index: 0, Code: 11000, Message: "E11000 duplicate key error"},
+				},
+			},
+			want: false,
+		},
+		{
 			name: "message substring immutable field",
 			err:  errors.New("Executor error during getMore :: caused by :: After applying the update, the immutable field 'a' was found to have been altered"),
 			want: true,

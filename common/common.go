@@ -154,6 +154,8 @@ func DuplicateKey(err error) bool {
 //   - WriteError code 31025: ShardKeyUpdateForbidden (MongoDB 5.0+:
 //     "Shard key update is not allowed without specifying the full shard key")
 //   - CommandError code 66 or 31025 (mongos wraps as command error)
+//   - WriteException write-error code 66 or 31025 (single-write path, e.g.
+//     SingleWriter's UpdateOne — not a BulkWriteException/CommandError)
 //   - Message substring match for mongos "caused by" chains
 //
 // Distinct from the "Document shard key value updates that cause the doc
@@ -178,6 +180,15 @@ func IsImmutableShardKeyError(err error) bool {
 	if cmdErr, ok := err.(mongo.CommandError); ok {
 		if cmdErr.Code == 66 || cmdErr.Code == 31025 {
 			return true
+		}
+	}
+
+	// Check single-write WriteException code (UpdateOne/DeleteOne paths)
+	if writeErr, ok := err.(mongo.WriteException); ok {
+		for _, we := range writeErr.WriteErrors {
+			if we.Code == 66 || we.Code == 31025 {
+				return true
+			}
 		}
 	}
 

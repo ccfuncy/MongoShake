@@ -564,4 +564,3 @@ func (bw *BulkWriter) doCommand(database string, metadata bson.E, oplogs []*Oplo
 	}
 	return nil
 }
-
